@@ -1,5 +1,7 @@
 # Bike sharing prediction model
 
+# Juan David Botero
+
 ## Usage
 
 To install the library:
