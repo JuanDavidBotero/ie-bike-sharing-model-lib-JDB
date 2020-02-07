@@ -266,7 +266,7 @@ def predict(parameters, model_dir=None, model="xgboost"):
     """
     model_path = get_model_path(model_dir)
     if not os.path.exists(model_path):
-        train_and_persist(model_dir)
+        train_and_persist(model_dir, model)
     if model == "xgboost":
         model = joblib.load(model_path + "/xgboost.pkl")
     elif model == "ridge":
