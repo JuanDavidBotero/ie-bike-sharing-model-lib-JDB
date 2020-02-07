@@ -9,6 +9,7 @@ import pandas as pd
 from pandas.tseries.holiday import USFederalHolidayCalendar as calendar
 from scipy.stats import skew
 from xgboost import XGBRegressor
+from sklearn.linear_model import Ridge
 
 from ie_bike_model.util import read_data, get_season, get_model_path
 
@@ -147,7 +148,7 @@ def train_xgboost(hour):
 
     hour_d = hour_d.select_dtypes(exclude="category")
 
-    hour_d_train_x, _, hour_d_train_y, _, = split_train_test(hour_d)
+    hour_d_train_x, hour_d_test_x, hour_d_train_y, hour_d_test_y, = split_train_test(hour_d)
 
     xgb = XGBRegressor(
         max_depth=3,
@@ -159,9 +160,30 @@ def train_xgboost(hour):
         seed=1234,
         gamma=1,
     )
-
     xgb.fit(hour_d_train_x, hour_d_train_y)
+    #result_xgb = xgb.predict(hour_d_test_x)
+    #print("R-squared for Train: %.2f" % xgb.score(hour_d_train_x, hour_d_train_y))
+    #print("R-squared for Test: %.2f" % xgb.score(hour_d_test_x, hour_d_test_y))
+
+    #RMSE = np.sqrt(np.mean((hour_d_test_y ** 2 - result_xgb ** 2) ** 2))
+    #MSE = RMSE ** 2
+
+    #print("MSE ={}".format(MSE))
+    #print("RMSE = {}".format(RMSE))
+
+    #print("Model created: xgboost")
+    #print(
+    #    "To run the created model use the predict() function importing it from .model"
+    #)
+
     return xgb
+
+
+def train_ridge(hour):
+    train_X, test_X, train_y, test_y = split_train_test(hour)
+    ridge = Ridge()
+    ridge.fit(train_X, train_y)
+    return ridge
 
 
 def postprocess(hour):
@@ -172,18 +194,22 @@ def postprocess(hour):
     return hour
 
 
-def train_and_persist(model_dir=None, hour_path=None):
+def train_and_persist(model_dir=None, hour_path=None, model="xgboost"):
     hour = read_data(hour_path)
     hour = preprocess(hour)
     hour = dummify(hour)
     hour = postprocess(hour)
 
     # TODO: Implement other models?
-    model = train_xgboost(hour)
+    if model == "xgboost":
+        model = train_xgboost(hour)
+        model_path = get_model_path(model_dir)
+        joblib.dump(model, model_path + "/xgboost.pkl")
 
-    model_path = get_model_path(model_dir)
-
-    joblib.dump(model, model_path)
+    elif model == "ridge":
+        model = train_ridge(hour)
+        model_path = get_model_path(model_dir)
+        joblib.dump(model, model_path + "/ridge.pkl")
 
 
 def get_input_dict(parameters):
@@ -228,19 +254,20 @@ def get_input_dict(parameters):
     return df.iloc[0].to_dict()
 
 
-def predict(parameters, model_dir=None):
+def predict(parameters, model_dir=None, model="xgboost"):
     """Returns model prediction.
-
     """
     model_path = get_model_path(model_dir)
     if not os.path.exists(model_path):
         train_and_persist(model_dir)
-
-    model = joblib.load(model_path)
+    if model == "xgboost":
+        model = joblib.load(model_path + "/xgboost.pkl")
+    elif model == "ridge":
+        model = joblib.load(model_path + "/ridge.pkl")
 
     input_dict = get_input_dict(parameters)
     X_input = pd.DataFrame([pd.Series(input_dict)])
-
+    print(X_input)
     result = model.predict(X_input)
 
     # Undo np.sqrt(hour["cnt"])

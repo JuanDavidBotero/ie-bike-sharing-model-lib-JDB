@@ -22,7 +22,7 @@ def get_model_path(model_dir=None):
     if model_dir is None:
         model_dir = os.path.dirname(__file__)
 
-    model_path = os.path.join(model_dir, "model.pkl")
+    model_path = os.path.join(model_dir, "")
     return model_path
 
 
