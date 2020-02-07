@@ -1,7 +1,7 @@
 import datetime as dt
 from flask import Flask, request
 
-from ie_bike_model.model import predict
+from ie_bike_model.model import predict, train_and_persist
 
 app = Flask(__name__)
 
@@ -24,4 +24,16 @@ def get_predict():
     parameters["model"] = parameters["model"]
 
     result = predict(parameters, model=parameters["model"])
-    return {"result": result, "model": parameters["model"]}
+    return {
+        "Number of bike-users predicted": result,
+        "model": parameters["model"],
+        "test score": "Unkown..."
+    }
+
+@app.route("/score")
+def get_train_score():
+    parameters = dict(request.args)
+    parameters["model"] = parameters["model"]
+    score = train_and_persist(model=parameters["model"])
+
+    return {"Train score": score}

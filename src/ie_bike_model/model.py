@@ -201,17 +201,23 @@ def train_and_persist(model_dir=None, hour_path=None, model="xgboost"):
     hour = preprocess(hour)
     hour = dummify(hour)
     hour = postprocess(hour)
+    train_X, test_X, train_y, test_y = split_train_test(hour)
 
     # TODO: Implement other models?
     if model == "xgboost":
         model = train_xgboost(hour)
         model_path = get_model_path(model_dir)
+        train_score = model.score(test_X, test_y)
         joblib.dump(model, model_path + "/xgboost.pkl")
+        return train_score
 
     elif model == "ridge":
         model = train_ridge(hour)
         model_path = get_model_path(model_dir)
+        train_score = model.score(test_X, test_y)
         joblib.dump(model, model_path + "/ridge.pkl")
+        return train_score
+
 
 
 def get_input_dict(parameters):
@@ -267,9 +273,9 @@ def predict(parameters, model_dir=None, model="xgboost"):
     elif model == "ridge":
         model = joblib.load(model_path + "/ridge.pkl")
 
+
     input_dict = get_input_dict(parameters)
     X_input = pd.DataFrame([pd.Series(input_dict)])
-    print(X_input)
     result = model.predict(X_input)
 
     # Undo np.sqrt(hour["cnt"])
