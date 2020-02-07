@@ -148,7 +148,9 @@ def train_xgboost(hour):
 
     hour_d = hour_d.select_dtypes(exclude="category")
 
-    hour_d_train_x, hour_d_test_x, hour_d_train_y, hour_d_test_y, = split_train_test(hour_d)
+    hour_d_train_x, hour_d_test_x, hour_d_train_y, hour_d_test_y, = split_train_test(
+        hour_d
+    )
 
     xgb = XGBRegressor(
         max_depth=3,
@@ -161,20 +163,20 @@ def train_xgboost(hour):
         gamma=1,
     )
     xgb.fit(hour_d_train_x, hour_d_train_y)
-    #result_xgb = xgb.predict(hour_d_test_x)
-    #print("R-squared for Train: %.2f" % xgb.score(hour_d_train_x, hour_d_train_y))
-    #print("R-squared for Test: %.2f" % xgb.score(hour_d_test_x, hour_d_test_y))
+    # result_xgb = xgb.predict(hour_d_test_x)
+    # print("R-squared for Train: %.2f" % xgb.score(hour_d_train_x, hour_d_train_y))
+    # print("R-squared for Test: %.2f" % xgb.score(hour_d_test_x, hour_d_test_y))
 
-    #RMSE = np.sqrt(np.mean((hour_d_test_y ** 2 - result_xgb ** 2) ** 2))
-    #MSE = RMSE ** 2
+    # RMSE = np.sqrt(np.mean((hour_d_test_y ** 2 - result_xgb ** 2) ** 2))
+    # MSE = RMSE ** 2
 
-    #print("MSE ={}".format(MSE))
-    #print("RMSE = {}".format(RMSE))
+    # print("MSE ={}".format(MSE))
+    # print("RMSE = {}".format(RMSE))
 
-    #print("Model created: xgboost")
-    #print(
+    # print("Model created: xgboost")
+    # print(
     #    "To run the created model use the predict() function importing it from .model"
-    #)
+    # )
 
     return xgb
 
