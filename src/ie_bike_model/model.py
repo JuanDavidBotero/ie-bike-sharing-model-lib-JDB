@@ -153,14 +153,14 @@ def train_xgboost(hour):
     )
 
     xgb = XGBRegressor(
-        max_depth=3,
-        learning_rate=0.01,
-        n_estimators=15,
+        max_depth=6,
+        learning_rate=0.06,
+        n_estimators=1000,
         objective="reg:squarederror",
         subsample=0.8,
-        colsample_bytree=1,
+        colsample_bytree=0.5,
         seed=1234,
-        gamma=1,
+        gamma=1.5,
     )
     xgb.fit(hour_d_train_x, hour_d_train_y)
     # result_xgb = xgb.predict(hour_d_test_x)
@@ -219,7 +219,6 @@ def train_and_persist(model_dir=None, hour_path=None, model="xgboost"):
         return train_score
 
 
-
 def get_input_dict(parameters):
     hour_original = read_data()
     base_year = pd.to_datetime(hour_original["dteday"]).min().year
@@ -272,7 +271,6 @@ def predict(parameters, model_dir=None, model="xgboost"):
         model = joblib.load(model_path + "/xgboost.pkl")
     elif model == "ridge":
         model = joblib.load(model_path + "/ridge.pkl")
-
 
     input_dict = get_input_dict(parameters)
     X_input = pd.DataFrame([pd.Series(input_dict)])
