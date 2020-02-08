@@ -15,7 +15,7 @@ After that you have to look for the folder created inside your computer and move
 ```
 $ cd ie-bike-sharing-model-lib-JDB
 ```
-Once in that folder follow the next instructions:
+**Once in that folder follow the next instructions:**
 
 To install the library developed:
 
