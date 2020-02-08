@@ -77,9 +77,12 @@ Output:
  * Debug mode: off
  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
  
- ### Now you have 2 choices of the model parameter xgboost or ridge (no quotes):
+ ### Now you have 3 choices of the model parameter xgboost, ridge, lasso (no quotes):
  - Follow this link to get a prediction with some weather parameter and a specific model: http://127.0.0.1:5000/predict?date=2012-10-01T18:00:00&weathersit=1&temperature_C=15&feeling_temperature_C=14&humidity=20&windspeed=5&model=ridge
  
  - Follow this link to get the training score of the model: http://127.0.0.1:5000/score?model=ridge 
+   - {"Train score":0.9104886886576075} **xgboost**
+   - {"Train score":0.7523794629159768} **ridge**
+   - {"Train score":0.30553692054467785} **lasso**
 
 # Thanks!
