@@ -9,7 +9,7 @@ import pandas as pd
 from pandas.tseries.holiday import USFederalHolidayCalendar as calendar
 from scipy.stats import skew
 from xgboost import XGBRegressor
-from sklearn.linear_model import Ridge
+from sklearn.linear_model import Ridge, Lasso
 
 from ie_bike_model.util import read_data, get_season, get_model_path
 
@@ -188,6 +188,13 @@ def train_ridge(hour):
     return ridge
 
 
+def train_lasso(hour):
+    train_X, test_X, train_y, test_y = split_train_test(hour)
+    lasso = Lasso()
+    lasso.fit(train_X, train_y)
+    return lasso
+
+
 def postprocess(hour):
     # Avoid modifying the original dataset at the cost of RAM
     hour = hour.copy()
@@ -216,6 +223,13 @@ def train_and_persist(model_dir=None, hour_path=None, model="xgboost"):
         model_path = get_model_path(model_dir)
         train_score = model.score(test_X, test_y)
         joblib.dump(model, model_path + "/ridge.pkl")
+        return train_score
+
+    elif model == "lasso":
+        model = train_lasso(hour)
+        model_path = get_model_path(model_dir)
+        train_score = model.score(test_X, test_y)
+        joblib.dump(model, model_path + "/lasso.pkl")
         return train_score
 
 
@@ -271,6 +285,8 @@ def predict(parameters, model_dir=None, model="xgboost"):
         model = joblib.load(model_path + "/xgboost.pkl")
     elif model == "ridge":
         model = joblib.load(model_path + "/ridge.pkl")
+    elif model == "lasso":
+        model = joblib.load(model_path + "/lasso.pkl")
 
     input_dict = get_input_dict(parameters)
     X_input = pd.DataFrame([pd.Series(input_dict)])

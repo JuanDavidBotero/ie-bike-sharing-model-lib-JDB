@@ -27,7 +27,8 @@ def get_predict():
     return {
         "Number of bike-users predicted": result,
         "model": parameters["model"],
-        "test score": "Unkown...",
+        "To check train score follow": "http://127.0.0.1:5000/score?model="
+        + parameters["model"],
     }
 
 
