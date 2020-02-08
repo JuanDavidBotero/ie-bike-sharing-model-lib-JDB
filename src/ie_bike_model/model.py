@@ -9,7 +9,7 @@ import pandas as pd
 from pandas.tseries.holiday import USFederalHolidayCalendar as calendar
 from scipy.stats import skew
 from xgboost import XGBRegressor
-from sklearn.linear_model import Ridge
+from sklearn.linear_model import Ridge, Lasso
 
 from ie_bike_model.util import read_data, get_season, get_model_path
 
@@ -153,14 +153,14 @@ def train_xgboost(hour):
     )
 
     xgb = XGBRegressor(
-        max_depth=3,
-        learning_rate=0.01,
-        n_estimators=15,
+        max_depth=6,
+        learning_rate=0.06,
+        n_estimators=1000,
         objective="reg:squarederror",
         subsample=0.8,
-        colsample_bytree=1,
+        colsample_bytree=0.5,
         seed=1234,
-        gamma=1,
+        gamma=1.5,
     )
     xgb.fit(hour_d_train_x, hour_d_train_y)
     # result_xgb = xgb.predict(hour_d_test_x)
@@ -186,6 +186,13 @@ def train_ridge(hour):
     ridge = Ridge()
     ridge.fit(train_X, train_y)
     return ridge
+
+
+def train_lasso(hour):
+    train_X, test_X, train_y, test_y = split_train_test(hour)
+    lasso = Lasso()
+    lasso.fit(train_X, train_y)
+    return lasso
 
 
 def postprocess(hour):
@@ -218,6 +225,12 @@ def train_and_persist(model_dir=None, hour_path=None, model="xgboost"):
         joblib.dump(model, model_path + "/ridge.pkl")
         return train_score
 
+    elif model == "lasso":
+        model = train_lasso(hour)
+        model_path = get_model_path(model_dir)
+        train_score = model.score(test_X, test_y)
+        joblib.dump(model, model_path + "/lasso.pkl")
+        return train_score
 
 
 def get_input_dict(parameters):
@@ -267,12 +280,13 @@ def predict(parameters, model_dir=None, model="xgboost"):
     """
     model_path = get_model_path(model_dir)
     if not os.path.exists(model_path):
-        train_and_persist(model_dir)
+        train_and_persist(model_dir, model)
     if model == "xgboost":
         model = joblib.load(model_path + "/xgboost.pkl")
     elif model == "ridge":
         model = joblib.load(model_path + "/ridge.pkl")
-
+    elif model == "lasso":
+        model = joblib.load(model_path + "/lasso.pkl")
 
     input_dict = get_input_dict(parameters)
     X_input = pd.DataFrame([pd.Series(input_dict)])
